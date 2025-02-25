@@ -1,2 +1,3 @@
 # Hye Urartu
-The Hye Authentication System
+
+The Hye Authentication Service

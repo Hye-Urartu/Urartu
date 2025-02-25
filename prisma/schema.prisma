@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model SignupSession {
+  id       String   @id @default(cuid()) @unique
+  email     String
+  expiresAt  DateTime? 
+}
+
+model PasswordResetSession {
+  id       String   @id @default(cuid()) @unique
+  email     String
+  expiresAt  DateTime? 
+}
+
+model JWKS {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        String  @id @unique @default(cuid())
+  firstName String
+  lastName  String
+  email     String  @unique
+  password  String?
+  avatar    String?
+  authMethod String
+  authorizationCodes UserAuthorizationCode[]
+  tokens UserAuthToken[]
+} 
+model UserAuthorizationCode {
+  code       String @unique
+  verifier  String
+  expireAt    DateTime
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  clientId    String
+}
+
+model UserAuthToken {
+  id          Int           @default(autoincrement()) @id
+  token       String        @unique
+  expireAt    DateTime
+  type       String
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  clientId    String
+}
+
+
+model Client {
+  id        String  @id
+  name      String
+  redirectUris String
+}
