@@ -14,26 +14,26 @@ datasource db {
 }
 
 model SignupSession {
-  id       String   @id @default(cuid()) @unique
+  id       String   @id @default(uuid()) @unique
   email     String
   expiresAt  DateTime? 
 }
 
 model PasswordResetSession {
-  id       String   @id @default(cuid()) @unique
+  id       String   @id @default(uuid()) @unique
   email     String
   expiresAt  DateTime? 
 }
 
 model JWKS {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   key       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model User {
-  id        String  @id @unique @default(cuid())
+  id        String  @id @unique @default(uuid())
   firstName String
   lastName  String
   email     String  @unique

@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { NextRequest } from "next/server";
 import fs from "fs";
 import jose from "node-jose";
+import { JWKS } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   const body = await request.formData();
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
         code: body.get("code") as string,
       },
     });
-    const ks = fs.readFileSync("jwks.json");
-    const keyStore = await jose.JWK.asKeyStore(ks.toString());
+    const ks = ((await prisma.jWKS.findFirst({})) as JWKS).key;
+    const keyStore = await jose.JWK.asKeyStore(ks);
     const [key] = keyStore.all({ use: "sig" });
     const access_token = await jose.JWS.createSign(
       {
