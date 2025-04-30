@@ -3,10 +3,14 @@ import ResetForm from "./resetForm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function ResetPassword({ searchParams }) {
+export default async function ResetPassword({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   let session = await prisma.passwordResetSession.findUnique({
     where: {
-      id: (await searchParams).token,
+      id: (await searchParams).token as string,
     },
   });
   if (!session) return redirect("/request-password-reset");

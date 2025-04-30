@@ -27,13 +27,9 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import ReCaptcha from "react-google-recaptcha";
-import { createUser, initiateSignUp } from "@/lib/users";
+import { initiateSignUp } from "@/lib/users";
 
-export default function SignUpForm({
-  className,
-  csrfToken,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export default function SignUpForm({ className, csrfToken, ...props }: any) {
   const signupSchema = z.object({
     email: z
       .string()
@@ -41,7 +37,7 @@ export default function SignUpForm({
       .email("This is not a valid email."),
   });
 
-  const captchaRef = React.createRef();
+  const captchaRef = React.createRef<ReCaptcha>();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -58,7 +54,13 @@ export default function SignUpForm({
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setSigningUp(true);
-    const token = await captchaRef.current.executeAsync();
+    const token = captchaRef.current
+      ? await captchaRef.current.executeAsync()
+      : null;
+    if (!token) {
+      setSigningUp(false);
+      return;
+    }
     console.log(token, "asdf");
     console.log(window.location.search);
     const formBody = new URLSearchParams();
@@ -108,7 +110,9 @@ export default function SignUpForm({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    sitekey={
+                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+                    }
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />

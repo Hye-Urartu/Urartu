@@ -29,11 +29,7 @@ import { useRouter } from "next/navigation";
 import ReCaptcha from "react-google-recaptcha";
 import { createUser, initiatePasswordReset, initiateSignUp } from "@/lib/users";
 
-export default function ResetForm({
-  className,
-  csrfToken,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export default function ResetForm({ className, csrfToken, ...props }: any) {
   const signupSchema = z.object({
     email: z
       .string()
@@ -41,7 +37,7 @@ export default function ResetForm({
       .email("This is not a valid email."),
   });
 
-  const captchaRef = React.createRef();
+  const captchaRef = React.createRef<ReCaptcha>();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -58,6 +54,11 @@ export default function ResetForm({
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setSigningUp(true);
+    if (!captchaRef.current) {
+      console.error("Captcha reference is null");
+      setSigningUp(false);
+      return;
+    }
     const token = await captchaRef.current.executeAsync();
     console.log(token, "asdf");
     console.log(window.location.search);
@@ -68,7 +69,7 @@ export default function ResetForm({
       signUp = await initiatePasswordReset(csrfToken, {
         email: values.email,
 
-        captcha: token,
+        captcha: token as string,
       });
     } catch (error) {
       console.log(error);
@@ -108,7 +109,9 @@ export default function ResetForm({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    sitekey={
+                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+                    }
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />
