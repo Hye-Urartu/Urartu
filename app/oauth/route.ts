@@ -1,11 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { prisma } from "@/lib/prisma";
 import { DateTime } from "luxon";
 import { NextRequest } from "next/server";
+import fs from "fs";
 import jose from "node-jose";
 import { JWKS } from "@prisma/client";
-export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   const body = await request.formData();
@@ -29,7 +27,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    if (DateTime.fromISO(authCode?.expireAt as any) < DateTime.now()) {
+    if (DateTime.fromISO(authCode?.expireAt) < DateTime.now()) {
       await prisma.userAuthorizationCode.delete({
         where: {
           code: body.get("code") as string,
@@ -104,7 +102,7 @@ export async function POST(request: NextRequest) {
             .toSeconds(),
           sub: authCode?.userId,
           iss: process.env.URI + "/auth",
-          ...authCode?.user,
+          ...authCode.user,
         })
       )
       .final();
@@ -116,21 +114,21 @@ export async function POST(request: NextRequest) {
           expireAt: DateTime.now().plus({ minutes: 5 }).toUTC().toString(),
           token: access_token,
           type: "access_token",
-          userId: authCode?.userId as string,
+          userId: authCode?.userId,
         },
         {
           clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
           token: refresh_token,
           type: "refresh_token",
-          userId: authCode?.userId as string,
+          userId: authCode?.userId,
         },
         {
           clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
           token: id_token,
           type: "id_token",
-          userId: authCode?.userId as string,
+          userId: authCode?.userId,
         },
       ],
     });

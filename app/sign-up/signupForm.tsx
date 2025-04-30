@@ -35,7 +35,7 @@ export default function SignUpForm({
   registrationToken,
   email,
   ...props
-}: any) {
+}: React.ComponentPropsWithoutRef<"div">) {
   const signupSchema = z
     .object({
       email: z
@@ -58,7 +58,7 @@ export default function SignUpForm({
         });
       }
     });
-  const captchaRef = React.createRef<ReCaptcha>();
+  const captchaRef = React.createRef();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -76,9 +76,7 @@ export default function SignUpForm({
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setSigningUp(true);
-    const token = captchaRef.current
-      ? await captchaRef.current.executeAsync()
-      : null;
+    const token = await captchaRef.current.executeAsync();
     console.log(token, "asdf");
     console.log(window.location.search);
     const formBody = new URLSearchParams();
@@ -91,7 +89,7 @@ export default function SignUpForm({
         password: values.password,
         firstName: values.firstName,
         lastName: values.lastName,
-        captcha: token as string,
+        captcha: token,
       });
     } catch (error) {
       console.log(error);
@@ -120,8 +118,8 @@ export default function SignUpForm({
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <ReCaptcha
                   onAbort={() => setSigningUp(false)}
-                  ref={captchaRef as any}
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
+                  ref={captchaRef}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
                   onChange={(e: any) => console.log(e)}
                   size="invisible"
                 />

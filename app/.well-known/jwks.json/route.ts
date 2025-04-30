@@ -1,12 +1,9 @@
 import jose from "node-jose";
 import { prisma } from "../../../lib/prisma";
 
-export const runtime = "edge";
 export async function GET() {
-  console.time("e");
   let jwks = await prisma.jWKS.findFirst();
-  console.timeEnd("e");
-  console.log(jwks);
+
   if (!jwks) {
     const keystore = jose.JWK.createKeyStore();
     let jwksSig = await keystore.generate("RSA", 2048, {

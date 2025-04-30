@@ -22,7 +22,7 @@ export async function resetPassword(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    } as any),
+    }),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -68,7 +68,7 @@ export async function initiatePasswordReset(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    } as any),
+    }),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -102,7 +102,7 @@ export async function initiatePasswordReset(
   console.log(process.env.SMTP_USER);
   const mailer = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT as string),
+    port: parseInt(process.env.SMTP_PORT),
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
@@ -137,7 +137,7 @@ export async function initiateSignUp(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    } as any),
+    }),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -170,7 +170,7 @@ export async function initiateSignUp(
   console.log(process.env.SMTP_USER);
   const mailer = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT as string),
+    port: parseInt(process.env.SMTP_PORT),
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
@@ -213,7 +213,7 @@ export async function createUser(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    } as any),
+    }),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";

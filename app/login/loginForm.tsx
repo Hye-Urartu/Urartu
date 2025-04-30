@@ -26,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 
+import { motion } from "framer-motion";
 import ReCaptcha from "react-google-recaptcha";
 
 const loginSchema = z.object({
@@ -35,8 +36,12 @@ const loginSchema = z.object({
     .email("This is not a valid email."),
   password: z.string().min(1, { message: "Password is required" }),
 });
-export default function LoginForm({ className, csrf, ...props }: any) {
-  const captchaRef = React.createRef<ReCaptcha>();
+export default function LoginForm({
+  className,
+  csrf,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
+  const captchaRef = React.createRef();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -54,13 +59,7 @@ export default function LoginForm({ className, csrf, ...props }: any) {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setLoggingIn(true);
-    const token = captchaRef.current
-      ? await captchaRef.current.executeAsync()
-      : null;
-    if (!token) {
-      setLoggingIn(false);
-      return;
-    }
+    const token = await captchaRef.current.executeAsync();
     console.log(window.location.search);
     const formBody = new URLSearchParams();
     formBody.append("email", values.email);
@@ -80,7 +79,8 @@ export default function LoginForm({ className, csrf, ...props }: any) {
       setLoggingIn(false);
     }
     console.log(authorize?.headers.get("location"));
-    if (authorize?.status == 200) {
+    console.log(authorize.status);
+    if (authorize.status == 200) {
       router.push("/");
     }
   }
@@ -189,7 +189,7 @@ export default function LoginForm({ className, csrf, ...props }: any) {
                 <ReCaptcha
                   onAbort={() => setLoggingIn(false)}
                   ref={captchaRef}
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
                   onChange={(e: any) => console.log(e)}
                   size="invisible"
                 />

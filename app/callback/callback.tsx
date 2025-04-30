@@ -35,7 +35,11 @@ const loginSchema = z.object({
     .email("This is not a valid email."),
   password: z.string().min(1, { message: "Password is required" }),
 });
-export default function Callback({ className, realCsrf, ...props }: any) {
+export default function Callback({
+  className,
+  realCsrf,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -65,7 +69,8 @@ export default function Callback({ className, realCsrf, ...props }: any) {
       setLoggingIn(false);
     }
     console.log(authorize?.headers.get("location"));
-    if (authorize?.status == 200) {
+    console.log(authorize.status);
+    if (authorize.status == 200) {
       router.push("/");
     }
   }

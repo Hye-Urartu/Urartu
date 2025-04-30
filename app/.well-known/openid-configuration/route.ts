@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 export async function GET() {
   const base = process.env.NEXT_PUBLIC_URI;
   const baseOauth = base + "/oauth";

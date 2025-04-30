@@ -35,7 +35,7 @@ export default function ResetPassword({
   resetToken,
   email,
   ...props
-}: any) {
+}: React.ComponentPropsWithoutRef<"div">) {
   const [success, setSuccess] = React.useState(false);
   const signupSchema = z
     .object({
@@ -57,7 +57,7 @@ export default function ResetPassword({
         });
       }
     });
-  const captchaRef = React.createRef<ReCaptcha>();
+  const captchaRef = React.createRef();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -75,13 +75,7 @@ export default function ResetPassword({
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setSigningUp(true);
-    const token = captchaRef.current
-      ? await captchaRef.current.executeAsync()
-      : null;
-    if (!token) {
-      setSigningUp(false);
-      return;
-    }
+    const token = await captchaRef.current.executeAsync();
     console.log(token, "asdf");
     console.log(window.location.search);
     const formBody = new URLSearchParams();
@@ -128,9 +122,7 @@ export default function ResetPassword({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={
-                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
-                    }
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />

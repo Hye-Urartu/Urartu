@@ -3,14 +3,10 @@ import SignUpForm from "./signupForm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function SignUp({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function SignUp({ searchParams }) {
   let session = await prisma.signupSession.findUnique({
     where: {
-      id: (await searchParams).token as string,
+      id: (await searchParams).token,
     },
   });
   if (!session) return redirect("/request-account");
