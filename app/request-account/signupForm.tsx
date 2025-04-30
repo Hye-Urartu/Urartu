@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -27,7 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import ReCaptcha from "react-google-recaptcha";
-import { createUser, initiateSignUp } from "@/lib/users";
+import { initiateSignUp } from "@/lib/users";
 
 export default function SignUpForm({
   className,

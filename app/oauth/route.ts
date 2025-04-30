@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { DateTime } from "luxon";
 import { NextRequest } from "next/server";
-import fs from "fs";
 import jose from "node-jose";
 import { JWK } from "@prisma/client";
 

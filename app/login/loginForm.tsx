@@ -26,7 +26,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 
-import { motion } from "framer-motion";
 import ReCaptcha from "react-google-recaptcha";
 
 const loginSchema = z.object({

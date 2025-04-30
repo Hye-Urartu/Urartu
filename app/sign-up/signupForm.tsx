@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -69,7 +68,6 @@ export default function SignUpForm({
   });
   const [signingUp, setSigningUp] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const router = useRouter();
   useEffect(() => {
     setSearch(window.location.search);
   }, []);

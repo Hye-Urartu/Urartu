@@ -1,30 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
 
@@ -47,33 +30,7 @@ export default function Callback({
       password: "",
     },
   });
-  const [loggingIn, setLoggingIn] = React.useState(false);
-  const router = useRouter();
 
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
-    setLoggingIn(true);
-    console.log(window.location.search);
-    const formBody = new URLSearchParams();
-    formBody.append("email", values.email);
-    formBody.append("password", values.password);
-    let authorize;
-    try {
-      authorize = await fetch(`/auth/authorize${window.location.search}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formBody,
-      });
-    } catch (error) {
-      setLoggingIn(false);
-    }
-    console.log(authorize?.headers.get("location"));
-    console.log(authorize.status);
-    if (authorize.status == 200) {
-      router.push("/");
-    }
-  }
   useEffect(() => {
     let csrf = localStorage.getItem("CSRF");
     async function handleCallback() {
