@@ -13,58 +13,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SignupSession {
-  id       String   @id @default(uuid()) @unique
-  email     String
-  expiresAt  DateTime? 
+model Client {
+  id           String  @id @unique @default(uuid())
+  name         String
+  redirectUrls String
+  logo         String?
+  userAuthCodes UserAuthCode[]
+  userAuthTokens UserAuthToken[]
 }
 
-model PasswordResetSession {
-  id       String   @id @default(uuid()) @unique
-  email     String
-  expiresAt  DateTime? 
+model User {
+  id         String          @id @unique @default(uuid())
+  authMethod String
+  email      String          @unique
+  firstName  String
+  lastName   String
+  password   String?
+  avatar     String?
+  authCodes  UserAuthCode[]
+  authTokens UserAuthToken[]
+  passwordResetSessions PasswordResetSession[]
 }
 
-model JWKS {
-  id        String   @id @default(uuid())
-  key       String
+model UserAuthCode {
+  code     String   @unique
+  verifier String
+  user     User    @relation(fields: [userId], references: [id])
+  userId   String
+  client   Client  @relation(fields: [clientId], references: [id])
+  clientId String
+  expireAt DateTime
+}
+
+model UserAuthToken {
+  token  String        @unique
+  type   AuthTokenType
+  user   User         @relation(fields: [userId], references: [id])
+  userId String
+  client Client       @relation(fields: [clientId], references: [id])
+  clientId String
+  expireAt DateTime
+}
+
+model JWK {
+  id        String   @id @unique @default(uuid())
+  raw       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model User {
-  id        String  @id @unique @default(uuid())
-  firstName String
-  lastName  String
-  email     String  @unique
-  password  String?
-  avatar    String?
-  authMethod String
-  authorizationCodes UserAuthorizationCode[]
-  tokens UserAuthToken[]
-} 
-model UserAuthorizationCode {
-  code       String @unique
-  verifier  String
-  expireAt    DateTime
-  user     User   @relation(fields: [userId], references: [id])
-  userId   String
-  clientId    String
+model SignupSession {
+  id        String   @id @unique @default(uuid())
+  email     String   @unique
+  expiresAt DateTime
 }
 
-model UserAuthToken {
-  id          Int           @default(autoincrement()) @id
-  token       String        @unique
-  expireAt    DateTime
-  type       String
-  userId   String
-  user     User   @relation(fields: [userId], references: [id])
-  clientId    String
+model PasswordResetSession {
+  id        String   @id @unique @default(uuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @unique
+  expiresAt DateTime
 }
 
-
-model Client {
-  id        String  @id
-  name      String
-  redirectUris String
+enum AuthTokenType {
+  access_token
+  refresh_token
+  id_token
 }
