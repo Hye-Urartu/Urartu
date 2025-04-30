@@ -81,7 +81,12 @@ export async function initiatePasswordReset(
   if (!user) return email;
   const resetSession = await prisma.passwordResetSession.create({
     data: {
-      email: email,
+      user: {
+        connect: {
+          email: email,
+        },
+      },
+      expiresAt: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
     },
   });
   const message = getMessage(
@@ -151,6 +156,7 @@ export async function initiateSignUp(
   const session = await prisma.signupSession.create({
     data: {
       email: email,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
     },
   });
   const message = getMessage(

@@ -2,7 +2,7 @@ import jose from "node-jose";
 import { prisma } from "../../../lib/prisma";
 
 export async function GET() {
-  let jwks = await prisma.jWKS.findFirst();
+  let jwks = await prisma.jWK.findFirst();
 
   if (!jwks) {
     const keystore = jose.JWK.createKeyStore();
@@ -11,15 +11,15 @@ export async function GET() {
       use: "sig",
     });
 
-    jwks = await prisma.jWKS.create({
+    jwks = await prisma.jWK.create({
       data: {
-        key: JSON.stringify({ keys: [jwksSig.toJSON(true)] }),
+        raw: JSON.stringify({ keys: [jwksSig.toJSON(true)] }),
       },
     });
   }
 
   return new Response(
-    JSON.stringify((await jose.JWK.asKeyStore(jwks.key)).toJSON(false)),
+    JSON.stringify((await jose.JWK.asKeyStore(jwks.raw)).toJSON(false)),
     {
       headers: {
         "Content-Type": "application/json",

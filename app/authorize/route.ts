@@ -21,17 +21,20 @@ async function generateAuthorizationCode(
   };
   const authorizationCode = Md5.hashStr(JSON.stringify(authObject));
   console.log(userId);
-  await prisma.userAuthorizationCode.deleteMany({
+  await prisma.userAuthCode.deleteMany({
     where: {
       userId: userId,
     },
   });
-  await prisma.userAuthorizationCode.create({
+  await prisma.userAuthCode.create({
     data: {
-      // @ts-ignore
       code: authorizationCode,
       verifier: verifier,
-      clientId: clientId,
+      client: {
+        connect: {
+          id: clientId,
+        },
+      },
       expireAt: authObject.authorizationExpireAt,
       user: {
         connect: {
