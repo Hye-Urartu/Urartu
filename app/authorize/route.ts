@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
     const code = await generateAuthorizationCode(
       userData.id,
-      csrf?.split("-")[2] as string,
+      request.cookies.get("code_verifier")?.value as string,
       client_id as string
     );
     return NextResponse.redirect(csrf?.split("-")[3] + `?code=${code}`);
