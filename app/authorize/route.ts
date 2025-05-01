@@ -8,7 +8,7 @@ import { decode } from "jsonwebtoken";
 
 async function generateAuthorizationCode(
   userId: string,
-  verifier: string,
+  challenge: string,
   clientId: string
 ) {
   const expiration = 5 * 60;
@@ -29,7 +29,7 @@ async function generateAuthorizationCode(
   await prisma.userAuthCode.create({
     data: {
       code: authorizationCode,
-      verifier: verifier,
+      challenge: challenge,
       client: {
         connect: {
           id: clientId,
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
     const code = await generateAuthorizationCode(
       userData.id,
-      request.cookies.get("code_verifier")?.value as string,
+      request.cookies.get("code_challenge")?.value as string,
       client_id as string
     );
     return NextResponse.redirect(csrf?.split("-")[3] + `?code=${code}`);
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
   }
   const code = await generateAuthorizationCode(
     user?.id as string,
-    request.cookies.get("code_verifier")?.value as string,
+    request.cookies.get("code_challenge")?.value as string,
     "ararat" // URA-15 multiple clients support
   );
   return NextResponse.redirect(
@@ -240,26 +240,18 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("csrf")) {
     return await POST(request);
   }
-  function base64URLEncode(str: Buffer) {
-    return str
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=/g, "");
-  }
-  const codeVerifier = base64URLEncode(crypto.randomBytes(32));
 
-  function sha256(buffer: string) {
-    return crypto.createHash("sha256").update(buffer).digest();
-  }
-  const codeChallenge = base64URLEncode(sha256(codeVerifier));
   return new Response(null, {
     status: 302,
     headers: {
       location:
         process.env.NEXT_PUBLIC_URI +
-        `/login${request.nextUrl.search}&code_challenge=${codeChallenge}&code_challenge_method=S256`,
-      "Set-Cookie": `code_verifier=${codeVerifier}; Path=/; HttpOnly; Secure; SameSite=Strict;`,
+        `/login${request.nextUrl.search}&code_challenge=${searchParams.get(
+          "code_challenge"
+        )}&code_challenge_method=S256`,
+      "Set-Cookie": `code_challenge=${searchParams.get(
+        "code_challenge"
+      )}; Path=/; HttpOnly; Secure; SameSite=Strict;`,
     },
   });
 }

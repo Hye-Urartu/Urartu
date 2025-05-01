@@ -3,18 +3,32 @@ import { DateTime } from "luxon";
 import { NextRequest } from "next/server";
 import jose from "node-jose";
 import { JWK as jwkPrisma } from "@prisma/client";
+import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   const body = await request.formData();
 
   if (body.get("grant_type") === "authorization_code") {
+    function sha256(buffer: string) {
+      return crypto.createHash("sha256").update(buffer).digest();
+    }
+    function base64URLEncode(str: Buffer) {
+      return str
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "");
+    }
+    const codeChallenge = base64URLEncode(
+      sha256(body.get("code_verifier") as string)
+    );
     const authCode = await prisma.userAuthCode.findUnique({
       where: {
         code: body.get("code") as string,
         AND: {
           clientId: body.get("client_id") as string,
           AND: {
-            verifier: body.get("code_verifier") as string,
+            challenge: codeChallenge,
           },
         },
       },

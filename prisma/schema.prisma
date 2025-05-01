@@ -37,7 +37,7 @@ model User {
 
 model UserAuthCode {
   code     String   @unique
-  verifier String
+  challenge String
   user     User    @relation(fields: [userId], references: [id])
   userId   String
   client   Client  @relation(fields: [clientId], references: [id])
