@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -27,13 +26,22 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import ReCaptcha from "react-google-recaptcha";
-import { createUser, initiatePasswordReset, initiateSignUp } from "@/lib/users";
+import { initiatePasswordReset } from "@/lib/users";
 
 export default function ResetForm({
   className,
   csrfToken,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: {
+  className?: string;
+  csrfToken: string;
+} & React.HTMLAttributes<HTMLDivElement> & {
+    csrf?: string;
+    code?: string;
+    state?: string;
+    client_id?: string;
+    redirect_uri?: string;
+  }) {
   const signupSchema = z.object({
     email: z
       .string()
@@ -41,7 +49,7 @@ export default function ResetForm({
       .email("This is not a valid email."),
   });
 
-  const captchaRef = React.createRef();
+  const captchaRef = React.createRef() as React.RefObject<ReCaptcha>;
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -68,7 +76,7 @@ export default function ResetForm({
       signUp = await initiatePasswordReset(csrfToken, {
         email: values.email,
 
-        captcha: token,
+        captcha: token || "",
       });
     } catch (error) {
       console.log(error);
@@ -108,7 +116,9 @@ export default function ResetForm({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    sitekey={
+                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+                    }
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />
@@ -124,7 +134,7 @@ export default function ResetForm({
                               <Input
                                 {...field}
                                 type="email"
-                                placeholder="joseph@hyeararat.com"
+                                placeholder="joseph@hyecompany.com"
                               />
                             </FormControl>
                             <FormMessage />

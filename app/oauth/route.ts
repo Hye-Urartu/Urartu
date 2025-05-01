@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { DateTime } from "luxon";
 import { NextRequest } from "next/server";
-import fs from "fs";
 import jose from "node-jose";
-import { JWK } from "@prisma/client";
+import { JWK as jwkPrisma } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   const body = await request.formData();
 
   if (body.get("grant_type") === "authorization_code") {
-    const authCode = await prisma.userAuthorizationCode.findUnique({
+    const authCode = await prisma.userAuthCode.findUnique({
       where: {
         code: body.get("code") as string,
         AND: {
@@ -27,7 +26,10 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    if (DateTime.fromISO(authCode?.expireAt) < DateTime.now()) {
+    if (!authCode) {
+      return new Response("Invalid authorization code", { status: 400 });
+    }
+    if (DateTime.fromISO(authCode.expireAt.toISOString()) < DateTime.now()) {
       await prisma.userAuthCode.delete({
         where: {
           code: body.get("code") as string,
@@ -40,13 +42,13 @@ export async function POST(request: NextRequest) {
         code: body.get("code") as string,
       },
     });
-    const ks = ((await prisma.jWK.findFirst({})) as JWK).raw;
+    const ks = ((await prisma.jWK.findFirst({})) as jwkPrisma).raw;
     const keyStore = await jose.JWK.asKeyStore(ks);
     const [key] = keyStore.all({ use: "sig" });
     const access_token = await jose.JWS.createSign(
       {
         compact: true,
-        jwk: key,
+        //jwk: key,
         fields: {
           typ: "jwt",
         },
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     const refresh_token = await jose.JWS.createSign(
       {
         compact: true,
-        jwk: key,
+        //jwk: key,
         fields: {
           typ: "jwt",
         },
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
     const id_token = await jose.JWS.createSign(
       {
         compact: true,
-        jwk: key,
+        //jwk: key,
         fields: {
           typ: "jwt",
         },
@@ -112,6 +114,7 @@ export async function POST(request: NextRequest) {
         {
           clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 5 }).toUTC().toString(),
+          // @ts-ignore
           token: access_token,
           type: "access_token",
           userId: authCode?.userId,
@@ -119,6 +122,7 @@ export async function POST(request: NextRequest) {
         {
           clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
+          // @ts-ignore
           token: refresh_token,
           type: "refresh_token",
           userId: authCode?.userId,
@@ -126,6 +130,7 @@ export async function POST(request: NextRequest) {
         {
           clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
+          // @ts-ignore
           token: id_token,
           type: "id_token",
           userId: authCode?.userId,
