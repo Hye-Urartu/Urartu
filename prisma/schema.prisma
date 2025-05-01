@@ -19,8 +19,8 @@ model Client {
   redirectUrls String
   logo         String?
   userAuthCodes UserAuthCode[]
-  userAuthTokens UserAuthToken[]
-}
+  sessions     Session[]
+  }
 
 model User {
   id         String          @id @unique @default(uuid())
@@ -31,27 +31,33 @@ model User {
   password   String?
   avatar     String?
   authCodes  UserAuthCode[]
-  authTokens UserAuthToken[]
   passwordResetSessions PasswordResetSession[]
+  sessions Session[]
 }
 
+model Session {
+  id       String   @id @unique @default(uuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  client   Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+  tokens Token[]
+}
 model UserAuthCode {
   code     String   @unique
   challenge String
-  user     User    @relation(fields: [userId], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
-  client   Client  @relation(fields: [clientId], references: [id])
+  client   Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId String
   expireAt DateTime
 }
 
-model UserAuthToken {
+model Token {
   token  String        @unique
   type   AuthTokenType
-  user   User         @relation(fields: [userId], references: [id])
-  userId String
-  client Client       @relation(fields: [clientId], references: [id])
-  clientId String
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
   expireAt DateTime
 }
 
@@ -70,7 +76,7 @@ model SignupSession {
 
 model PasswordResetSession {
   id        String   @id @unique @default(uuid())
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String  @unique
   expiresAt DateTime
 }

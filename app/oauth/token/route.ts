@@ -122,8 +122,21 @@ export async function POST(request: NextRequest) {
         })
       )
       .final();
-
-    await prisma.userAuthToken.createMany({
+    const session = await prisma.session.create({
+      data: {
+        user: {
+          connect: {
+            id: authCode?.userId,
+          },
+        },
+        client: {
+          connect: {
+            id: body.get("client_id") as string,
+          },
+        },
+      },
+    });
+    await prisma.token.createMany({
       data: [
         {
           clientId: body.get("client_id") as string,
@@ -132,6 +145,11 @@ export async function POST(request: NextRequest) {
           token: access_token,
           type: "access_token",
           userId: authCode?.userId,
+          session: {
+            connect: {
+              id: session.id,
+            },
+          },
         },
         {
           clientId: body.get("client_id") as string,
@@ -140,6 +158,11 @@ export async function POST(request: NextRequest) {
           token: refresh_token,
           type: "refresh_token",
           userId: authCode?.userId,
+          session: {
+            connect: {
+              id: session.id,
+            },
+          },
         },
         {
           clientId: body.get("client_id") as string,
@@ -148,6 +171,11 @@ export async function POST(request: NextRequest) {
           token: id_token,
           type: "id_token",
           userId: authCode?.userId,
+          session: {
+            connect: {
+              id: session.id,
+            },
+          },
         },
       ],
     });
