@@ -7,7 +7,7 @@ import { getMessage } from "./mail";
 import nodemailer from "nodemailer";
 
 export async function resetPassword(
-  csrfToken: string,
+  csrfToken: string, // URA-12
   {
     token,
     password,
@@ -22,7 +22,7 @@ export async function resetPassword(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    }),
+    } as any),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -31,12 +31,19 @@ export async function resetPassword(
     where: {
       id: token,
     },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
   });
   if (!session) return "Invalid password reset token";
   const hashedPass = await argon2.hash(password);
   await prisma.user.update({
     where: {
-      email: session.email,
+      email: session.user.email,
     },
     data: {
       password: hashedPass,
@@ -47,11 +54,11 @@ export async function resetPassword(
       id: token,
     },
   });
-  return session.email;
+  return session.user.email;
 }
 
 export async function initiatePasswordReset(
-  csrfToken: string,
+  csrfToken: string, // URA-12
   {
     email,
     captcha,
@@ -68,7 +75,7 @@ export async function initiatePasswordReset(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    }),
+    } as any),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -107,7 +114,7 @@ export async function initiatePasswordReset(
   console.log(process.env.SMTP_USER);
   const mailer = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT),
+    port: parseInt(process.env.SMTP_PORT as string),
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
@@ -125,7 +132,7 @@ export async function initiatePasswordReset(
 }
 
 export async function initiateSignUp(
-  csrfToken: string,
+  csrfToken: string, // URA-12
   {
     captcha,
     email,
@@ -142,7 +149,7 @@ export async function initiateSignUp(
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: captcha,
-    }),
+    } as any),
   });
   let capData = await cap.json();
   if (!capData.success) return "Failed to verify humanity";
@@ -176,7 +183,7 @@ export async function initiateSignUp(
   console.log(process.env.SMTP_USER);
   const mailer = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT),
+    port: parseInt(process.env.SMTP_PORT as string),
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
@@ -217,7 +224,7 @@ export async function createUser(
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({
-      secret: process.env.RECAPTCHA_SECRET_KEY,
+      secret: process.env.RECAPTCHA_SECRET_KEY as string,
       response: captcha,
     }),
   });

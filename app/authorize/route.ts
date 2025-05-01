@@ -69,16 +69,22 @@ export async function POST(request: NextRequest) {
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
           client_secret: process.env.GOOGLE_CLIENT_SECRET,
           redirect_uri: process.env.NEXT_PUBLIC_URI + "/callback",
-        }),
+        } as any),
       });
       const { id_token } = await res.json();
-      const userData = decode(id_token);
+      const userData = decode(id_token) as {
+        sub: string;
+        email: string;
+        given_name: string;
+        family_name: string;
+        picture: string;
+      };
       user = {
-        sub: userData.sub,
-        email: userData.email,
-        firstName: userData.given_name,
-        lastName: userData.family_name,
-        avatar: userData.picture,
+        sub: userData?.sub,
+        email: userData?.email,
+        firstName: userData?.given_name,
+        lastName: userData?.family_name,
+        avatar: userData?.picture,
         method: "google",
       };
       console.log(user);
@@ -91,7 +97,7 @@ export async function POST(request: NextRequest) {
           client_secret: process.env.GITHUB_CLIENT_SECRET,
           code: request.nextUrl.searchParams.get("code"),
           redirect_uri: process.env.NEXT_PUBLIC_URI + "/callback",
-        }),
+        } as any),
       });
       const dat = await res.text();
 
@@ -123,7 +129,7 @@ export async function POST(request: NextRequest) {
           redirect_uri: process.env.NEXT_PUBLIC_URI + "/callback",
           grant_type: "authorization_code",
           scope: "identify email",
-        }),
+        } as any),
       });
       const dat = await res.json();
       const res2 = await fetch(`https://discord.com/api/v9/users/@me`, {
@@ -153,19 +159,19 @@ export async function POST(request: NextRequest) {
     if (!userData) {
       userData = await prisma.user.create({
         data: {
-          id: user.sub,
+          id: user?.sub,
           email: user?.email,
           firstName: user?.firstName,
           lastName: user?.lastName,
           avatar: user?.avatar,
-          authMethod: user.method,
+          authMethod: user?.method as string,
         },
       });
     }
     const code = await generateAuthorizationCode(
       userData.id,
-      csrf?.split("-")[2],
-      client_id
+      csrf?.split("-")[2] as string,
+      client_id as string
     );
     return NextResponse.redirect(csrf?.split("-")[3] + `?code=${code}`);
   }
@@ -188,7 +194,7 @@ export async function POST(request: NextRequest) {
     body: new URLSearchParams({
       secret: process.env.RECAPTCHA_SECRET_KEY,
       response: body.get("captcha") as string,
-    }),
+    } as any),
   });
   let capData = await cap.json();
   if (!capData.success)
@@ -211,20 +217,22 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.log(error.message);
     return new Response("Internal Server Error", { status: 500 });
   }
 
-  const pass = await argon2.hash(body.get("password"));
+  const pass = await argon2.hash(body.get("password") as string);
   console.log(pass);
-  let valid = await argon2.verify(user.password, body.get("password"));
+  let valid = await argon2.verify(
+    user?.password as string,
+    body.get("password") as string
+  );
   if (!valid) {
     return new Response("Invalid email or password", { status: 401 });
   }
   const code = await generateAuthorizationCode(
-    user.id,
-    request.cookies.get("code_verifier").value,
-    "ararat"
+    user?.id as string,
+    request.cookies.get("code_verifier")?.value as string,
+    "ararat" // URA-15 multiple clients support
   );
   return NextResponse.redirect(
     searchParams.get("redirect_uri") + `?code=${code}`

@@ -39,8 +39,15 @@ export default function LoginForm({
   className,
   csrf,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
-  const captchaRef = React.createRef();
+}: {
+  className?: string;
+  csrf: string;
+} & React.ComponentPropsWithoutRef<"div"> & {
+    csrf: string;
+    registrationToken?: string;
+    email?: string;
+  }) {
+  const captchaRef = React.createRef() as React.RefObject<ReCaptcha>;
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +70,7 @@ export default function LoginForm({
     const formBody = new URLSearchParams();
     formBody.append("email", values.email);
     formBody.append("password", values.password);
-    formBody.append("captcha", token);
+    formBody.append("captcha", token || "");
     let authorize;
     try {
       authorize = await fetch(`/authorize${window.location.search}`, {
@@ -78,8 +85,8 @@ export default function LoginForm({
       setLoggingIn(false);
     }
     console.log(authorize?.headers.get("location"));
-    console.log(authorize.status);
-    if (authorize.status == 200) {
+    console.log(authorize?.status);
+    if (authorize?.status == 200) {
       router.push("/");
     }
   }
@@ -188,7 +195,7 @@ export default function LoginForm({
                 <ReCaptcha
                   onAbort={() => setLoggingIn(false)}
                   ref={captchaRef}
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
                   onChange={(e: any) => console.log(e)}
                   size="invisible"
                 />
@@ -204,7 +211,7 @@ export default function LoginForm({
                             <Input
                               {...field}
                               type="email"
-                              placeholder="joseph@hyeararat.com"
+                              placeholder="joseph@hyecompany.com"
                             />
                           </FormControl>
                           <FormMessage />
@@ -254,7 +261,7 @@ export default function LoginForm({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-        Powered by <Link href="https://hyeararat.com">Hye Urartu</Link>{" "}
+        Powered by <Link href="https://hyecompany.com">Hye Urartu</Link>{" "}
       </div>
     </div>
   );

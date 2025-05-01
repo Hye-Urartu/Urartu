@@ -32,7 +32,11 @@ export default function SignUpForm({
   className,
   csrfToken,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: {
+  className?: string;
+  csrfToken: string;
+  props?: React.HTMLAttributes<HTMLDivElement>;
+}) {
   const signupSchema = z.object({
     email: z
       .string()
@@ -40,7 +44,7 @@ export default function SignUpForm({
       .email("This is not a valid email."),
   });
 
-  const captchaRef = React.createRef();
+  const captchaRef = React.createRef() as React.RefObject<ReCaptcha>;
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -67,7 +71,7 @@ export default function SignUpForm({
       signUp = await initiateSignUp(csrfToken, {
         email: values.email,
 
-        captcha: token,
+        captcha: token || "",
       });
     } catch (error) {
       console.log(error);
@@ -107,7 +111,9 @@ export default function SignUpForm({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    sitekey={
+                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+                    }
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />
@@ -123,7 +129,7 @@ export default function SignUpForm({
                               <Input
                                 {...field}
                                 type="email"
-                                placeholder="joseph@hyeararat.com"
+                                placeholder="joseph@hyecompany.com"
                               />
                             </FormControl>
                             <FormMessage />

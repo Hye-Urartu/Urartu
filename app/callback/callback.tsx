@@ -4,33 +4,24 @@ import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Spinner } from "@/components/ui/spinner";
 
 import { motion } from "framer-motion";
 
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "Email is required" })
-    .email("This is not a valid email."),
-  password: z.string().min(1, { message: "Password is required" }),
-});
 export default function Callback({
   className,
   realCsrf,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
+}: {
+  className?: string;
+  realCsrf: string;
+} & React.HTMLAttributes<HTMLDivElement> & {
+    csrf?: string;
+    code?: string;
+    state?: string;
+    client_id?: string;
+    redirect_uri?: string;
+  }) {
   useEffect(() => {
     let csrf = localStorage.getItem("CSRF");
     async function handleCallback() {

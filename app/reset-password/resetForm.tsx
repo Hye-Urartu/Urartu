@@ -34,7 +34,18 @@ export default function ResetPassword({
   resetToken,
   email,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: {
+  className?: string;
+  csrfToken: string;
+  resetToken: string;
+  email: string;
+} & React.HTMLAttributes<HTMLDivElement> & {
+    csrf?: string;
+    code?: string;
+    state?: string;
+    client_id?: string;
+    redirect_uri?: string;
+  }) {
   const [success, setSuccess] = React.useState(false);
   const signupSchema = z
     .object({
@@ -56,7 +67,7 @@ export default function ResetPassword({
         });
       }
     });
-  const captchaRef = React.createRef();
+  const captchaRef = React.createRef() as React.RefObject<ReCaptcha>;
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -85,7 +96,7 @@ export default function ResetPassword({
       user = await resetPassword(csrfToken, {
         password: values.password,
         token: resetToken,
-        captcha: token,
+        captcha: token || "",
       });
     } catch (error) {
       console.log(error);
@@ -121,7 +132,9 @@ export default function ResetPassword({
                   <ReCaptcha
                     onAbort={() => setSigningUp(false)}
                     ref={captchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    sitekey={
+                      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+                    }
                     onChange={(e: any) => console.log(e)}
                     size="invisible"
                   />
@@ -138,7 +151,7 @@ export default function ResetPassword({
                               <Input
                                 {...field}
                                 type="email"
-                                placeholder="joseph@hyeararat.com"
+                                placeholder="joseph@hyecompany.com"
                               />
                             </FormControl>
                             <FormMessage />
