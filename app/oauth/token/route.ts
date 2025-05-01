@@ -139,30 +139,24 @@ export async function POST(request: NextRequest) {
     await prisma.token.createMany({
       data: [
         {
-          clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 5 }).toUTC().toString(),
           // @ts-ignore
           token: access_token,
           type: "access_token",
-          userId: authCode?.userId,
           sessionId: session.id,
         },
         {
-          clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
           // @ts-ignore
           token: refresh_token,
           type: "refresh_token",
-          userId: authCode?.userId,
           sessionId: session.id,
         },
         {
-          clientId: body.get("client_id") as string,
           expireAt: DateTime.now().plus({ minutes: 60 }).toUTC().toString(),
           // @ts-ignore
           token: id_token,
           type: "id_token",
-          userId: authCode?.userId,
           sessionId: session.id,
         },
       ],
