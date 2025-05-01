@@ -48,12 +48,7 @@ async function generateAuthorizationCode(
 
 export async function POST(request: NextRequest) {
   const searchParams = new URL(request.nextUrl).searchParams;
-  if (
-    searchParams.get("redirect_uri") !=
-    process.env.NEXT_PUBLIC_URI + "/callback"
-  ) {
-    return new Response("Invalid redirect_uri", { status: 400 });
-  }
+
   if (searchParams.get("csrf")) {
     let csrf = searchParams.get("csrf");
     let method = csrf?.split("-")[0];
