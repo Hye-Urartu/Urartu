@@ -12,6 +12,10 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // csrf protection
+  if (request.nextUrl.pathname == "/oauth/token") {
+    // skip csrf for oauth token endpoint
+    return response;
+  }
   try {
     await csrfProtect(request, response);
   } catch (err) {
