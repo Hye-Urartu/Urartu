@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import argon2 from "argon2";
 import { DateTime } from "luxon";
 import { Md5 } from "ts-md5";
-import crypto from "crypto";
 import { decode } from "jsonwebtoken";
 
 async function generateAuthorizationCode(
@@ -227,7 +226,7 @@ export async function POST(request: NextRequest) {
   const code = await generateAuthorizationCode(
     user?.id as string,
     request.cookies.get("code_challenge")?.value as string,
-    "ararat" // URA-15 multiple clients support
+    searchParams.get("client_id") as string
   );
   return NextResponse.redirect(
     searchParams.get("redirect_uri") + `?code=${code}`
